@@ -1,633 +1,303 @@
-
-#include<stdio.h>
-struct tnode
+#include <stdio.h>
+#include <stdlib.h>
+//created structure of tree
+struct tree
 {
-    int data;
-    struct tnode* lchild;
-    struct tnode* rchild;
+    struct tree *left;
+    int ele;
+    struct tree *right;
 };
 
-struct tnode *root = NULL;
-
-struct tnode *parent;
-
-void insert()
+//it stores address of parent and its child(being used while searching an element)
+struct address
 {
-    struct tnode *temp;
-    temp = (struct tnode*)malloc(sizeof(struct tnode));
-    printf("\nENTER THE DATA : ");
-    scanf("%d",&temp->data);
-    temp->lchild = NULL;
-    temp->rchild = NULL;
-    if(root == NULL)
+    struct tree *r;  //r stands for root(child)
+    struct tree *p;  //p stands for parent
+};
+
+//below code is inorder transversal(since it we can print elements in ascending order, i named it output)
+void output(struct tree *root)
+{
+    struct tree *parent;
+
+    if (root != NULL)
     {
-        root = temp;
+
+        output(root->left);
+        printf("%d ", root->ele);
+        output(root->right);
+    }
+}
+
+//preorder transversal
+void preorder(struct tree *root)
+{
+    if (root != NULL)
+    {
+        printf("%d ", root->ele);
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+//postorder transversal
+void postorder(struct tree *root)
+{
+    if (root != NULL)
+    {
+        postorder(root->left);
+        postorder(root->right);
+        printf("%d ", root->ele);
+    }
+}
+
+//code to insert a new element
+struct tree *insert(struct tree *root)
+{
+    int element;
+    printf("\nenter the element that you want to insert:");
+    scanf("%d", &element);
+
+    struct tree *newElement;
+    newElement = (struct tree *)malloc(sizeof(struct tree));
+    newElement->ele = element;
+    newElement->left = NULL;
+    newElement->right = NULL;
+
+    struct tree *temp = root;   //it stores initial value of root(because we are going to change root value to transverse whole tree)
+
+    if (root == NULL)
+    {
+        root = newElement;
+        temp = newElement;
     }
     else
     {
-        struct tnode* temp1 = root,*p;
-        int i=2;
-        while(temp1!=NULL)
+
+        while (1)
         {
-            if(temp->data > temp1->data)
+            
+            if (root->ele > element)                //to add element smaller than the root
             {
-                p = temp1;
-                temp1 = temp1->rchild;
-                i=0;
+
+                if (root->left != NULL)             //checking if left is NULL
+                {
+
+                    root = root->left;
+                }
+                else
+                {
+                    root->left = newElement;
+                    break;
+                }
             }
-            else if(temp->data <= temp1->data)
+            else                                    //to add element greater than the root
             {
-                p = temp1;
-                temp1 = temp1->lchild;
-                i=1;
+                if (root->right != NULL)            //checking if right is NULL
+                {
+
+                    root = root->right;
+                }
+                else
+                {
+
+                    root->right = newElement;
+                    break;
+                }
             }
         }
-        if(i==0)
+    }
+    return temp;                                    //returning intial root value
+}
+
+//code to del element
+void del(struct tree *root, struct tree *parent)
+{   
+    //root contains the address of the element that need to be deleted
+
+    struct tree *temp, *realRoot;
+    realRoot = root;                                //to store initial root value
+    int flag = 0;
+    if (root->left == NULL && root->right == NULL)  //if root doesnot have any child
+    {
+        if (parent->left == root)
         {
-            p->rchild = temp;
+            parent->left = NULL;
         }
-        else if(i==1)
+        else
         {
-            p->lchild = temp;
+            parent->right = NULL;
         }
-
     }
-
-}
-
-
-void inorder(struct tnode *t)
-{
-    if(t->lchild)
-        inorder(t->lchild);
-    printf("%d ",t->data);
-    if(t->rchild)
-        inorder(t->rchild);
-}
-
-void preorder(struct tnode *t)
-{
-
-    printf("%d ",t->data);
-    if(t->lchild)
-        preorder(t->lchild);
-    if(t->rchild)
-        preorder(t->rchild);
-}
-
-void postorder(struct tnode *t)
-{
-
-
-    if(t->rchild)
-        postorder(t->rchild);
-    printf("%d ",t->data);
-    if(t->lchild)
-        postorder(t->lchild);
-}
-
-void display()
-{
-    if(root == NULL)
+    else if (root->left == NULL && root->right != NULL) //if root has only right child
     {
-        printf("\nempty");
-    }
-    else
-    {
-        struct tnode* temp = root;
-    inorder(temp);
-    printf("\n");
-    printf("\n");
-    preorder(temp);
-    printf("\n");
-    printf("\n");
-    postorder(temp);
-    printf("\n");
-    printf("\n");
-    }
+        temp = root;
+        root = root->right;
+        flag = 0;
+        while (root->left != NULL)
+        {
+            temp = root;
+            root = root->left;
+            flag = 1;
+        }
+        if (flag == 0)
+            temp->right = root->right;
+        else
+            temp->left = root->right;                   
 
+        realRoot->ele = root->ele;                      //replacing root element with smallest element of right group to the root
+    }
+    else if (root->left != NULL)                        //if root has any one of the childs
+    {
+        temp = root;
+        root = root->left;
+        while (root->right != NULL)
+        {
+            temp = root;
+            root = root->right;
+            flag = 1;
+        }
+        if (flag == 0)
+            temp->left = root->left;
+        else
+            temp->right = root->left;
+        realRoot->ele = root->ele;                       //replacing root element with largest element of left group to root
+    }
 }
 
-void length()
+//code to find an element
+struct address *find(struct tree *root, int element, struct tree *parent)
 {
-    struct tnode* temp = root,*temp1 = root;
-    while(1)
+    
+    struct address *adrs;
+     adrs = (struct address *)malloc(sizeof(struct address));
+    if (root != NULL && root->ele == element)
     {
-
+        printf("\nElement found!!\n\n");
+       
+        adrs->r = root;
+        adrs->p = parent;
+        return adrs;
     }
-}
-
-int parent1(int j,int ele)
-{
-    int i=2;
-    //struct tnode* temp = root,*temp1=root,*s,*t
-    if(ele == root->data)
+    else if (root != NULL && root->ele > element)
     {
         parent = root;
-        return 5;
+        find(root->left, element, parent);
     }
-        struct tnode* temp1 = root;
-        while(temp1!=NULL)
-        {
-            if(temp1->data < ele)
-            {
-                parent = temp1;
-                temp1 = temp1->rchild;
-                i=1;
-            }
-            else if(temp1->data > ele)
-            {
-                parent = temp1;
-                temp1 = temp1->lchild;
-                i=0;
-            }
-            else if(temp1->data == ele)
-            {
-                break;
-            }
-        }
-        if(i==1)
-        {
-            return i;
-            //printf("\nright of %d is %d",parent->data,parent->rchild->data);
-        }
-        else if(i==0)
-        {
-            return i;
-            //printf("\nleft of %d is %d",parent->data,parent->lchild->data);
-        }
-        else
-        {
-            return i;
-        }
-
-}
-
-struct tnode* parent3;
-
-int parent2(int j,int ele)
-{
-    int i=2;
-    //struct tnode* temp = root,*temp1=root,*s,*t
-    if(ele == root->data)
+    else if (root != NULL && root->ele < element)
     {
-        parent3 = root;
-        return 5;
+        parent = root;
+        find(root->right, element, parent);
     }
-        struct tnode* temp1 = root;
-        while(temp1!=NULL)
-        {
-            if(temp1->data < ele)
-            {
-                parent3 = temp1;
-                temp1 = temp1->rchild;
-                i=1;
-            }
-            else if(temp1->data > ele)
-            {
-                parent3 = temp1;
-                temp1 = temp1->lchild;
-                i=0;
-            }
-            else if(temp1->data == ele)
-            {
-                break;
-            }
-        }
-        if(i==1)
-        {
-            return i;
-            //printf("\nright of %d is %d",parent->data,parent->rchild->data);
-        }
-        else if(i==0)
-        {
-            return i;
-            //printf("\nleft of %d is %d",parent->data,parent->lchild->data);
-        }
-        else
-        {
-            return i;
-        }
-
-}
-
-
-void onechild(struct tnode* parent, struct tnode* child, int j, int i)
-{
-    //printf("\n parent%d child %d",parent->data,child->data);
-
-    if(j==0 && i==0)
+    else
     {
-        parent->lchild = parent->lchild->lchild;
-        child->lchild = NULL;
-        free(child);
+        printf("\nelement not found!!\n\n");
+        adrs->p = NULL;
+        adrs->r = NULL;
+        return adrs;
     }
-    else if(j==0 && i==1)
-    {
-        parent->lchild = parent->lchild->rchild;
-        child->rchild = NULL;
-        free(child);
-    }
-    else if(j==1 && i==0)
-    {
-        parent->rchild = parent->rchild->lchild;
-        child->lchild = NULL;
-        free(child);
-    }
-    else if(j==1 && i==1)
-    {
-        parent->rchild = parent->rchild->rchild;
-        child->rchild = NULL;
-        free(child);
-    }
-    else if(j==5 && i==0)
-    {
-        root->data = root->lchild->data;
-        root->lchild = NULL;
-        free(root->lchild);
-    }
-    else if(j==5 && i==1)
-    {
-        root->data = root->rchild->data;
-        root->rchild = NULL;
-        free(root->rchild);
-
-    }
-}
-
-void nochild(struct tnode* parent, struct tnode* child, int j)
-{
-    //printf("\n parent%d child %d",parent->data,child->data);
-
-    if(j==0)
-    {
-        parent->lchild = NULL;
-        free(child);
-    }
-    else if(j==1)
-    {
-        parent->rchild = NULL;
-        free(child);
-    }
-    else if(j==5)
-    {
-        root = NULL;
-        free(root);
-    }
-}
-
-void min(struct tnode* child1, struct tnode* temp)
-{
-    if(child1->lchild)
-        min(child1->lchild,temp);
-    if(temp->data>child1->data)
-    {
-        temp->data = child1->data;
-    }
-    if(child1->rchild)
-    {
-        min(child1->rchild,temp);
-    }
-}
-
-
-void twochild(struct tnode* parent, struct tnode* child, int j)
-{
-    if(j==0)
-    {
-        int k= 3;
-        struct tnode* temp, *child3;
-        temp = (struct tnode*)malloc(sizeof(struct tnode));
-        temp->data = parent->lchild->rchild->data;
-        min(parent->lchild->rchild,temp);
-        //printf("\n\n min %d\n",temp->data);
-        k = parent2(k,temp->data);
-        if(k==0)
-        {
-            child3 = parent3->lchild;
-            parent3->lchild = NULL;
-            if(child3->rchild != NULL)
-            {
-                parent3->lchild = child3->rchild;
-            }
-            parent->lchild = child3;
-
-            if(child->rchild == child3)
-            {
-                child3->rchild = NULL;
-            }
-            else
-            {
-                child3->rchild = child->rchild;
-            }
-            if(child->lchild == child3)
-            {
-                child3->lchild = NULL;
-            }
-            else
-            {
-                child3->lchild = child->lchild;
-            }
-            child->lchild = NULL;
-            child->rchild = NULL;
-            free(child);
-        }
-        else if(k==1)
-        {
-            child3 = parent3->lchild;
-            parent3->lchild = NULL;
-            if(child3->rchild != NULL)
-            {
-                parent3->rchild = child3->rchild;
-            }
-            parent->lchild = child3;
-            if(child->rchild == child3)
-            {
-                child3->rchild = NULL;
-            }
-            else
-            {
-                child3->rchild = child->rchild;
-            }
-            if(child->lchild == child3)
-            {
-                child3->lchild = NULL;
-            }
-            else
-            {
-                child3->lchild = child->lchild;
-            }
-
-
-            child->lchild = NULL;
-            child->rchild = NULL;
-            free(child);
-        }
-    }
-    else if(j==1)
-    {
-        int k= 3;
-        struct tnode* temp, *child3;
-        temp = (struct tnode*)malloc(sizeof(struct tnode));
-        temp->data = parent->rchild->rchild->data;
-        min(parent->rchild->rchild,temp);
-        //printf("\n\n min %d\n",temp->data);
-        k = parent2(k,temp->data);
-        if(k==0)
-        {
-            child3 = parent3->lchild;
-            parent3->lchild = NULL;
-            if(child3->rchild != NULL)
-            {
-                parent3->lchild = child3->rchild;
-            }
-            parent->rchild = child3;
-
-            if(child->rchild == child3)
-            {
-                child3->rchild = NULL;
-            }
-            else
-            {
-                child3->rchild = child->rchild;
-            }
-            if(child->lchild == child3)
-            {
-                child3->lchild = NULL;
-            }
-            else
-            {
-                child3->lchild = child->lchild;
-            }
-            child->lchild = NULL;
-            child->rchild = NULL;
-            free(child);
-        }
-        else if(k==1)
-        {
-            child3 = parent3->rchild;
-            parent3->rchild = NULL;
-            if(child3->rchild != NULL)
-            {
-                parent3->rchild = child3->rchild;
-            }
-            parent->rchild = child3;
-            if(child->rchild == child3)
-            {
-                child3->rchild = NULL;
-            }
-            else
-            {
-                child3->rchild = child->rchild;
-            }
-            if(child->lchild == child3)
-            {
-                child3->lchild = NULL;
-            }
-            else
-            {
-                child3->lchild = child->lchild;
-            }
-
-
-            child->lchild = NULL;
-            child->rchild = NULL;
-            free(child);
-        }
-
-    }
-    else if(j==5)
-    {
-        int k= 3;
-        struct tnode* temp, *child3;
-        temp = (struct tnode*)malloc(sizeof(struct tnode));
-        temp->data = parent->rchild->data;
-        min(parent->rchild,temp);
-        //printf("\n\n min %d\n",temp->data);
-        k = parent2(k,temp->data);
-
-        if(k==0)
-        {
-            child3 = parent3->lchild;
-            parent3->lchild = NULL;
-            if(child3->rchild != NULL)
-            {
-                parent3->lchild = child3->rchild;
-            }
-            child= root;
-            root = child3;
-            if(child->rchild == child3)
-            {
-                child3->rchild = NULL;
-            }
-            else
-            {
-                child3->rchild = child->rchild;
-            }
-            if(child->lchild == child3)
-            {
-                child3->lchild = NULL;
-            }
-            else
-            {
-                child3->lchild = child->lchild;
-            }
-            child->lchild = NULL;
-            child->rchild = NULL;
-            free(child);
-        }
-        else if(k==1)
-        {
-            child3 = parent3->rchild;
-            parent3->rchild = NULL;
-            if(child3->rchild != NULL)
-            {
-                parent3->rchild = child3->rchild;
-            }
-            child = root;
-            root = child3;
-            if(child->rchild == child3)
-            {
-                child3->rchild = NULL;
-            }
-            else
-            {
-                child3->rchild = child->rchild;
-            }
-            if(child->lchild == child3)
-            {
-                child3->lchild = NULL;
-            }
-            else
-            {
-                child3->lchild = child->lchild;
-            }
-
-
-            child->lchild = NULL;
-            child->rchild = NULL;
-            free(child);
-        }
-    }
-}
-
-void delete()
-{
-    int j=3,ele;
-    printf("ENTER THE ELEMENT TO DELETE :");
-    scanf("%d",&ele);
-    j = parent1(j,ele);
-    if(j == 2)
-    {
-        printf("\nELEMENT NOT FOUND");
-    }
-    else if(j==0)
-    {
-        if( (parent->lchild->lchild!=NULL)  && (parent->lchild->rchild!=NULL))
-        {
-            printf("\n2 child");
-            twochild(parent,parent->lchild,j);
-
-        }
-        else if( (parent->lchild->lchild!=NULL)  && (parent->lchild->rchild==NULL) )
-        {
-            int i=0;
-            printf("\n1 left child");
-            onechild(parent,parent->lchild,j,i);
-        }
-        else if( (parent->lchild->lchild==NULL)  && (parent->lchild->rchild!=NULL))
-        {
-            int i=1;
-            printf("\n1 right child");
-            onechild(parent,parent->rchild,j,i);
-        }
-        else
-        {
-            printf("\nno child");
-            nochild(parent,parent->lchild,j);
-        }
-    }
-    else if(j==1)
-    {
-        if( (parent->rchild->lchild!=NULL)  && (parent->rchild->rchild!=NULL))
-        {
-            printf("\n2 child");
-            twochild(parent,parent->rchild,j);
-        }
-        else if( (parent->rchild->lchild!=NULL)  && (parent->rchild->rchild==NULL) )
-        {
-            int i=0;
-            printf("\n1 left child");
-            onechild(parent,parent->lchild,j,i);
-        }
-        else if( (parent->rchild->lchild==NULL)  && (parent->rchild->rchild!=NULL))
-        {
-            int i=1;
-            printf("\n1 right child");
-            onechild(parent,parent->rchild,j,i);
-        }
-        else
-        {
-            printf("\nno child");
-            nochild(parent,parent->lchild,j);
-        }
-    }
-    else if(j==5)
-    {
-        if( (parent->lchild!=NULL)  && (parent->rchild!=NULL))
-        {
-            printf("\n2 child");
-            twochild(parent,parent->lchild,j);
-        }
-        else if( (parent->lchild==NULL)  && (parent->rchild!=NULL) )
-        {
-            int i=1;
-            printf("\n1 right child");
-            onechild(parent,parent->rchild,j,i);
-        }
-        else if( (parent->lchild!=NULL)  && (parent->rchild==NULL))
-        {
-            int i=0;
-            printf("\n1 right child");
-            onechild(parent,parent->lchild,j,i);
-        }
-        else
-        {
-            printf("\nno child");
-            nochild(parent,parent->lchild,j);
-        }
-    }
-
 }
 
 void main()
 {
-    int j=2;
-    int ele;
-    printf("\nBINARY SEARCH TREE\n");
-    while(1)
+    struct tree *root = NULL, *parent = NULL;
+    struct address *adrs;
+    int option, element;
+    printf(" \nBINARY SEARCH TREE");
+    do
     {
-        printf("\n1.insert\n2.delete\n3.display\n4.parent\nothers to exit\nENTER YOUR CHOICE : ");
-        int choice;
-        scanf("%d",&choice);
-        switch(choice)
+        printf("\n\nEnter\n\n1.Insert Element\n2.Delete Element\n3.Display Elements\n4.Parent\n5.Search an Element\n6.Exit\n\n===>");
+        scanf("%d", &option);
+        switch (option)
         {
         case 1:
-            insert();
+            root = insert(root);
             break;
         case 2:
-            delete();
+
+            printf("\nEnter the element that you want to delete:");
+            scanf("%d", &element);
+
+            if (root == NULL)
+                printf("\n\nNO ELEMENTS found!!\n\n");
+
+            else if (root->left == NULL && root->right == NULL && root->ele == element)
+            {
+                root = NULL;
+                printf("\n\nNO ELEMENTS left!!");
+            }
+
+            else
+            {
+                adrs = find(root, element, parent);
+                if(adrs->r!=NULL)
+                del(adrs->r, adrs->p);
+            }
             break;
         case 3:
-            display();
+            if (root == NULL)
+            {
+                printf("\n\nNO ELEMENTS found...Tree is Empty!!\n\n");
+            }
+            else
+            {
+                output(root);
+                printf("\n\n");
+                preorder(root);
+                printf("\n\n");
+                postorder(root);
+            }
             break;
         case 4:
-            printf("\nFIND PARENT OF : ");
-            scanf("%d",&ele);
-            j = parent1(j,ele);
+            printf("\n\nEnter element:");
+            scanf("%d", &element);
+            adrs = find(root, element, parent);
+            if(root == NULL)
+            printf("\nNO Elements found...TREE is Empty!!");
+            else if (adrs->p == NULL && adrs->r == NULL)                //if element not found in the tree
+            {
+                printf("\n\nEnter valid element\n");
+            }
+            else
+            {
+                if (adrs->p == NULL)
+                    printf("It has NO parent.");
+                else
+                    printf("Its parent is \"%d\"", adrs->p->ele);
+            }
+            break;
+        case 5:
+            printf("\n\nEnter element:");
+            scanf("%d", &element);
+            adrs = find(root, element, parent);
+            if(root==NULL)
+            printf("\nNO Elements found...TREE is Empty!!");
+            else if (adrs->p == NULL && adrs->r == NULL)
+            {
+                printf("\nEnter valid element\n");
+            }
+            else
+            {
+
+                if (adrs->p == NULL)
+                    printf("It is the ROOT of tree.");
+                else
+                {
+                    if (adrs->p->right == adrs->r)
+                    {
+                        printf("\n\nElement is \"right\" child of \"%d\"", adrs->p->ele);
+                    }
+                    else
+                    {
+
+                        printf("\n\nElement is \"left\" child of \"%d\"", adrs->p->ele);
+                    }
+                }
+            }
+
             break;
         default:
-            exit(0);
+            break;
         }
-    }
+    } while (option != 6);
 }
