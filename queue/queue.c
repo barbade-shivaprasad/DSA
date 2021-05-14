@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 
 int ele;
 int arr[5];
@@ -7,20 +8,16 @@ int rear=0;
 
 void enqueue()
 {
-    if(front == 5)
+    if(rear == 5)
     {
-        printf("\nSTACK IS FULL");
+        printf("\nQueue IS FULL");
     }
     else
     {
         printf("\nenter the element: ");
         scanf("%d",&ele);
-        for(int i=front;i>0;i--)
-        {
-            arr[i] = arr[i-1];
-        }
         arr[rear] = ele;
-        front++;
+        rear++;
     }
 }
 
@@ -32,15 +29,22 @@ void dequeue()
     }
     else
     {
-        printf("\npopped value is %d at position %d ",arr[front-1],front-1);
-        front--;
+        int temp = arr[0];
+        for(int i=0;i < rear;i++){
+
+            arr[i] = arr[i+1];
+        }
+        printf("The dequeued value is '%d'\n",temp);
+        printf("The TOP value is '%d'\n",arr[0]);
+        rear--;
+
     }
 }
 
 void display()
 {
     printf("\n");
-    for(int i=0; i<front;i++)
+    for(int i=0; i<rear;i++)
     {
         printf("%d ",arr[i]);
     }
@@ -69,6 +73,7 @@ void main()
             exit(0);
             break;
         }
+        
     }
 
 
