@@ -1,58 +1,70 @@
 #include<stdio.h>
-int count =0;
-int merge_sort(int a[],int l,int m,int h)
-{
-    int k=0;
-    for(int i=l;i<h+1;i++)
-    {
-        for(int j=k;j<h-m;j++)
+
+void merge(int a[],int f,int l){
+
+        int size = l-f+1;
+        int temp[size];
+        int k=0;
+        int mid = (f+l)/2;
+        int i = f;
+        int j = mid+1;
+        while (i <= mid && j <= l)
         {
-            if(a[i]>=a[m+1+j])
+            if(a[i] < a[j])
             {
-                int temp = a[m+1+j];
-                for(int p = m+1+j;p > i;p--)
-                {
-                    a[p] = a[p-1];
-                }
-                a[i] = temp;
-                count++;
-                k+=1;
-                break;
+                temp[k] = a[i];
+                i++;
+                k++;
+            }
+            else{
+
+                temp[k] = a[j];
+                j++;
+                k++;
             }
         }
-    }
-    k=0;
+        while (i<=mid)
+        {
+            temp[k] = a[i];
+            i++;
+            k++;
+        }
+        while (j<=l)
+        {
+            temp[k] = a[j];
+            j++;
+            k++;
+        }
+        for(int m=0;m<size;m++){
+
+            a[f] = temp[m];
+            f++;
+        }
+        
+        
+        
 }
 
-int merge(int l, int h, int a[])
-{
-    if(l<h)
-    {
-        int m = (l+h)/2;
-        merge(l,m,a);
-        merge(m+1,h,a);
-        //printf("\n l = %d m = %d h = %d",l,m,h);
-        merge_sort(a,l,m,h);
-    }
 
+
+void mergesort(int a[],int f,int l){
+
+    int mid = (f+l)/2;
+    if(f<l){
+
+        mergesort(a,f,mid);
+        mergesort(a,mid+1,l);
+        merge(a,f,l);
+
+    }
 
 }
-int main()
-{
-    int n;
-    printf("ENTER THE LENGTH OF THE ARRAY : ");
-    scanf("%d",&n);
-    int a[n];
-    for(int i=0;i<n;i++)
-    {
-        scanf("%d",&a[i]);
-    }
+void main(){
 
-   //int  a[7] = {1,2,3,1,1,2,1};
-    merge(0,n-1,a);
-    for(int i=0;i<n;i++)
-    {
+    int a[5] = {6,3,2,0,1};
+    mergesort(a,0,4);
+    
+    for(int i=0;i<5;i++){
         printf("%d ",a[i]);
     }
-    printf("\nno of swaps : %d ",count);
 }
