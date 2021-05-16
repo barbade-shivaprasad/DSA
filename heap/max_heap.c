@@ -1,49 +1,82 @@
-#include<stdio.h>
-int n=10;
-int swap(int i,int min,int a[n])
+#include <stdio.h>
+int flag = 0;
+
+void swap(int arr[], int pos1, int pos2)
 {
-    int temp = a[i];
-    a[i] = a[min];
-    a[min] = temp;
+
+    int temp = arr[pos1];
+    arr[pos1] = arr[pos2];
+    arr[pos2] = temp;
+
+    flag = 0;
 }
 
-int heapify(int a[10],int i)
+void heapify(int arr[], int size, int i)
 {
-    int l = (2*i)+1;
-    int r = (2*i)+2;
-    int max =-1;
-    if(n>r)
+
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    //if both childs are present
+    if (right < size)
     {
-        if(a[l]<=a[r])
-        {
-            max = r;
+
+        if (arr[left] < arr[right])
+        { //to identify min value
+
+            if (arr[right] > arr[i]) //swapping min value with parent if min is less than parent
+                swap(arr, i, right);
         }
-        else 
+        else
         {
-            max = l;
+
+            if (arr[left] > arr[i])
+                swap(arr, i, left);
         }
     }
-    else if(n>l)
+
+    //if single child is present
+    else if (left < size)
     {
-        max = l;
-    }
-    if(a[i]<=a[max] && max!=-1)
-    {
-        swap(i,max,a);
-        heapify(a,max);
-        
+
+        if (arr[left] > arr[i]) //swapping min value with parent if min is less than parent
+            swap(arr, i, right);
     }
 }
 
-int main()
+void main()
 {
-    int a[10] = {4,3,2,1,4,3,21,6,7,8};
-    for(int i=n/2;i>=0;i--)
+
+    int size, ele;
+
+    printf("\nEnter size: ");
+    scanf("%d", &size);
+
+    int arr[size];
+
+    for (int i = 0; i < size; i++)
     {
-        heapify(a,i);
+
+        printf("Enter element : ");
+        scanf("%d", &ele);
+
+        arr[i] = ele;
     }
-    for(int i=0;i<10;i++)
+
+    while (flag == 0)
     {
-        printf("%d ",a[i]);
+        flag = 1;
+
+        for (int i = size / 2; i >= 0; i--)
+        {
+
+            heapify(arr, size, i);
+        }
+    }
+
+    for (int i = 0; i < size; i++)
+    {
+
+        printf("%d ", arr[i]);
     }
 }
