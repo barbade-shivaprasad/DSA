@@ -1,95 +1,132 @@
 #include<stdio.h>
-int front =0;
+
+int front = 0;
 int rear = 0;
-int k=0;
-int n=6;
-int enqueue(int queue[n],int val)
+int size;
+
+void enqueue(int arr[],int ele)
 {
+
     
-    if(rear<n)
-    {
-        queue[rear] = val;
+
+    if(arr[rear] == -1){
+
+        arr[rear] = ele;
         rear++;
     }
-    
-}
+    else{
 
-int dequeue(int queue[n])
-{
-    if(rear>-1)
-    {
-        for(int i=front;i<rear;i++)
-        {
-            queue[i] = queue[i+1];
-        }
-        rear--;
+        printf("Queue is FULL\n");
     }
+
+    if(rear == size)
+    rear = 0;
+
+}
+
+
+int dequeue(int arr[])
+{
+
+    int temp;
+
     
-}
+    if(arr[front] != -1){
 
-int check_visited(int visited_list[n],int val)
-{
-    for(int i=0;i<n;i++)
-    {
-        if(visited_list[i] == val)
+        temp = arr[front];
+
+        arr[front] = -1;
+        
+
+        front++;
+
+        if(front == size)
         {
-            return 1;
+            front = 0;
         }
-        else
-        {
-            return 0;
-        }
+        
+        return temp;
     }
-    
+
 }
 
-int check_queue(int val,int queue[rear])
-{
-    for(int i=0;i<=rear;i++)
-    {
-        if(queue[i] == val)
-        {
-            return 1;
-        }
-        else 
-        {
-            return 0;
-        }
+int isempty(int arr[]){
+
+    if(arr[front] == -1){
+
+        return 1;
+    }
+    else{
+
+        return 0;
     }
 }
 
-int main()
-{
-    int n=6;
-    int adj_matrix[][6] = {{0,1,1,0,0,1},{1,0,0,1,1,0},{1,0,0,0,1,0},{0,1,0,0,0,1},{0,1,1,0,0,1},{1,0,0,1,1,0}};
-    //BFS
-    int visited_list[6]={0,0,0,0,0,0};
-    int queue[n];
-    enqueue(queue,1);
-    visited_list[1-1] = 1;
-    int i=0,val;
-    int a,b;
-    while(i<n)
-    {
-        val = queue[front];
-        for(int j=1;j<n+1;j++)
-        {
-            if(adj_matrix[val-1][j-1] == 1)
-            {
-                a = check_visited(visited_list,j);
-                b = check_queue(j,queue);
-                if(a==0 && b==0)
-                {
-                    enqueue(queue,j);
-                    visited_list[j-1] = 1;
+int in_queue(int arr[],int ele){
+
+    for(int i=0;i<size;i++){
+
+        if(arr[i] == ele)
+        return 1;
+    }
+    return 0;
+}
+
+void bsf(int arr[][size] , int queue[] , int visited[]){
+
+    while(!isempty(queue)){
+
+        int temp = dequeue(queue);
+        
+        printf("\n");
+        printf(" %d => ",temp);
+
+        if(visited[temp] != 1){
+
+            visited[temp] = 1;    
+            for(int i=0;i<size;i++){
+
+                if(arr[temp][i] == 1){
+
+                    printf("%d ",i);
+                    if(visited[i] == 0 && in_queue(queue,i) == 0)
+                    enqueue(queue,i);
+                    
                 }
-                
             }
         }
-        printf("%d ",queue[front]);
-        dequeue(queue);
-        i++;
+
     }
-    
+    printf("\nEvery node is Visited");
     
 }
+
+
+
+void main(){
+
+    int adj_matrix[][6] = {{0,1,1,0,0,1},{1,0,0,1,1,0},{1,0,0,0,1,0},{0,1,0,0,0,1},{0,1,1,0,0,1},{1,0,0,1,1,0}};
+
+    size = 6;
+
+    int queue[36],visited[6];
+
+    for(int i=0;i<size;i++){
+
+        visited[i] = 0;
+    }
+
+    for(int i=0;i<36;i++){
+
+        queue[i] = -1;
+    }
+        
+    enqueue(queue,0);
+        
+
+    // printf("%d",sizeof(arr)/ (sizeof(int) * (sizeof (arr[0])) /sizeof(int)) );
+    printf("\n\nFrom   TO\n");
+    bsf(arr,queue,visited);
+}
+
+
