@@ -1,54 +1,77 @@
-#include<stdio.h>
-int count = 0;
-int swap(int a[],int k,int j)
+#include <stdio.h>
+#include <stdlib.h>
+void quicksort(int arr[], int first, int last)
 {
-    int temp = a[k];
-    a[k] = a[j];
-    a[j] = temp;
-    count++;
-}
-int quick(int a[], int l, int h)
-{
-    int p = a[l];
-    int k=0;
-        for(int j=1+l;j<=h;j++)
+
+    int i = first;
+    int j = last;
+    int pivot = arr[first];
+    int temp;
+    // printf("%d", pivot);
+    if (i < j)
+    {
+        while (1)
         {
-            if(a[j]<p)
+
+            if (arr[i] <= pivot)
             {
-                k++;
-                swap(a,k+l,j);
+                // printf("yes\n");
+
+                i++;
+            }
+
+            else if (arr[j] > pivot)
+            {
+
+                j--;
+                // printf("no\n");
+            }
+            else
+            {
+
+                temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+                i++;
+                j--;
+            }
+
+            if (i > j)
+            {
+                temp = arr[j];
+                arr[j] = pivot;
+                arr[first] = temp;
+                break;
             }
         }
-        swap(a,k+l,l);
-    //printf("\n%d\n",k);
-    if(l<k+l-1)
-    {
-        quick(a,l,k+l-1);
-
+        quicksort(arr, first, j-1);
+        quicksort(arr, i, last);
     }
-    if(k+l+1<h)
-    {
-        quick(a,k+l+1,h);
-    }
-
-
 }
 
-int main()
+void main()
 {
-    int n;
-    printf("ENTER THE LENGTH OF THE ARRAY : ");
-    scanf("%d",&n);
-    int a[n];
-    for(int i=0;i<n;i++)
-    {
-        scanf("%d",&a[i]);
+
+    int size, ele;
+    printf("enter the size of array:");
+    scanf("%d",&size);
+
+    int *array;
+    array = (int *)malloc(size * sizeof(int));
+    
+
+    for(int i=0;i<size;i++){
+
+        printf("Enter element:");
+        scanf("%d",&ele);
+
+        array[i] = ele;
     }
-    //int a[7] = {7,54,4,1,3,100,9};
-    quick(a,0,n-1);
-    for(int i=0;i<n;i++)
-    {
-        printf("%d ",a[i]);
-    }
-    printf("\n no of swaps : %d",count);
+
+    quicksort(array, 0, size-1);
+    
+    for (int in = 0; in < size; in++)
+                {
+                    printf("%d ", array[in]);
+                }
 }
